@@ -23,7 +23,6 @@ namespace HS.Base
                 string key = arr[index];
                 foreach (Transform child in root)
                 {
-                    D.LogErrorForce("child: " + child.name);
                     if (child.name == key)
                     {
                         root = child;

@@ -6,7 +6,7 @@ using HS.Base;
 using HS.UI;
 using HS.Manager;
 
-public class UIGameView : HS_ViewBase , IForward
+public class UILogoView : BaseUILogoView , IForward
 {
 
 	protected override void OnCreated()

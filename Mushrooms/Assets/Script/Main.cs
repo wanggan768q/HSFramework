@@ -4,12 +4,15 @@ using HS.Manager;
 
 public class Main : MonoBehaviour {
 
-	// Use this for initialization
+    void Awake()
+    {
+
+    }
+
 	void Start () {
-        //HS_ViewManager.Open<UILoadingView>();
+        HS_ViewManager.Open<UILogoView>();
     }
 	
-	// Update is called once per frame
 	void Update () {
 	
 	}
