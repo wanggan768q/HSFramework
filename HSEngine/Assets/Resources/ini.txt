@@ -1,0 +1,10 @@
+﻿#渠道
+[Channel_0]
+Windows = Build
+
+[Channel_1]
+Android = com.hxsd.FightingHero
+
+[Channel_2]
+XM = Build
+DefineSymbols = XM;TalkingData
