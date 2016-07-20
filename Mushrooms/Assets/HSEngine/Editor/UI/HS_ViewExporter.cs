@@ -448,7 +448,7 @@ namespace HS.Edit
 
                 generateCellClass(cellPrefab.transform, "Cell");
 
-                code.Append(TAB2).AppendLine("static public " + cellStructName + " Get(UIListViewCell cell)");
+                code.Append(TAB2).AppendLine("static public " + cellStructName + " Get(HS_UIListViewCell cell)");
                 code.Append(TAB2).AppendLine("{");
                 code.Append(TAB3).AppendLine("Transform t = cell.transform;");
 
@@ -477,6 +477,7 @@ namespace HS.Edit
                     if (cell != null)
                     {
                         string cellPrefabPath = GetCellPathName(cellName, cellPath);
+                        HS_Directory.CreateDirectory(cellPath);
                         PrefabUtility.CreatePrefab(cellPrefabPath, cell, ReplacePrefabOptions.ConnectToPrefab);
                     }
 

@@ -14,12 +14,16 @@ namespace HS.IO
         {
             get
             {
-                string s = string.Empty;
-                if(Application.platform == RuntimePlatform.WindowsEditor || Application.platform == RuntimePlatform.WindowsPlayer)
+                char s =  '/';
+                if (Application.platform == RuntimePlatform.WindowsEditor || Application.platform == RuntimePlatform.WindowsPlayer)
                 {
-                    s = Path.AltDirectorySeparatorChar + "";
+                    s = Path.AltDirectorySeparatorChar;
                 }
-                return Path.DirectorySeparatorChar;
+                else
+                {
+                    s = Path.DirectorySeparatorChar;
+                }
+                return s;
             }
         }
 

@@ -126,9 +126,9 @@ namespace HS.Edit
                         }
                     }
 
-                    GenerateViewBaseClass(child, prefabPath, scriptPath + "/Base", cellPath, baseClassName);
+                    string newBaseClassName =  GenerateViewBaseClass(child, prefabPath, scriptPath + "/Base", cellPath, baseClassName);
 
-                    GenerateViewClass(scriptPath, viewName, baseClassName);
+                    GenerateViewClass(scriptPath, viewName, newBaseClassName);
                 }
             }
 
@@ -214,7 +214,7 @@ namespace HS.Edit
         {
             
             StringBuilder code = new StringBuilder();
-            string className = "UI" + childName + "View";
+            string className = "" + childName + "View";
             string fileName = scriptPath + "/View/" + className + ".cs";
             if (File.Exists(fileName))
             {
@@ -260,7 +260,7 @@ namespace HS.Edit
             WriteString(fileName, code.ToString());
         }
 
-        static private void GenerateViewBaseClass(Transform panel, string prefabPath, string scriptPath, string cellPath, string baseClassName)
+        static private string GenerateViewBaseClass(Transform panel, string prefabPath, string scriptPath, string cellPath, string baseClassName)
         {
             // generate script
             StringBuilder code = new StringBuilder();
@@ -448,7 +448,7 @@ namespace HS.Edit
 
                 generateCellClass(cellPrefab.transform, "Cell");
 
-                code.Append(TAB2).AppendLine("static public " + cellStructName + " Get(UIListViewCell cell)");
+                code.Append(TAB2).AppendLine("static public " + cellStructName + " Get(HS_UIListViewCell cell)");
                 code.Append(TAB2).AppendLine("{");
                 code.Append(TAB3).AppendLine("Transform t = cell.transform;");
 
@@ -477,6 +477,7 @@ namespace HS.Edit
                     if (cell != null)
                     {
                         string cellPrefabPath = GetCellPathName(cellName, cellPath);
+                        HS_Directory.CreateDirectory(cellPath);
                         PrefabUtility.CreatePrefab(cellPrefabPath, cell, ReplacePrefabOptions.ConnectToPrefab);
                     }
 
@@ -492,6 +493,8 @@ namespace HS.Edit
             PrefabUtility.CreatePrefab(prefabPath + "/" + panel.name + ".prefab", panel.gameObject, ReplacePrefabOptions.ConnectToPrefab);
 
             GameObject.DestroyImmediate(panel.gameObject);
+
+            return className;
         }
 
         public static void WriteString(string filePath, string content)

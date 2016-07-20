@@ -41,6 +41,7 @@ namespace HS.Base
     public interface IResetable
     {
         void New();
+
         void Rest();
     }
 }
