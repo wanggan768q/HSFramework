@@ -9,6 +9,7 @@ using HS.Manager;
 public class BaseUILogoView : HS_ViewBase
 {
 	protected UnityEngine.UI.Image _logoImage;
+	protected UnityEngine.UI.Text _text;
 	
 	internal override GameObject GetViewPrefab()
 	{
@@ -23,5 +24,8 @@ public class BaseUILogoView : HS_ViewBase
 		if (transform == HS_ViewManager.root.transform) return;
 		
 		this._logoImage = HS_Base.FindProperty<UnityEngine.UI.Image>(transform, "LogoImage");
+		
+		this._text = HS_Base.FindProperty<UnityEngine.UI.Text>(transform, "Text");
+		this._text.text = "111111111";
 	}
 }
