@@ -16,6 +16,10 @@ public class BaseUIHomeView : HS_ViewBase
 	protected UnityEngine.UI.Button _watering;
 	protected UnityEngine.RectTransform _weather;
 	protected HS.UI.HS_UIListView _humidityList;
+	protected UnityEngine.UI.Button _strengthen;
+	protected UnityEngine.UI.Button _illustrations;
+	protected HS.UI.HS_UIListView _mushroomsDescriptionList;
+	protected HS.UI.HS_UIListView _mushroomsSpeciesList;
 	
 	internal override GameObject GetViewPrefab()
 	{
@@ -53,10 +57,62 @@ public class BaseUIHomeView : HS_ViewBase
 		this._humidityList.onClick += OnListViewClick;
 		this._humidityList.onSelected += OnListViewSelected;
 		this._humidityList.onDeselected += OnListViewDeselected;
+		
+		this._strengthen = HS_Base.FindProperty<UnityEngine.UI.Button>(transform, "Strengthen");
+		this.RegisterButtonClickEvent (this._strengthen);
+		
+		this._illustrations = HS_Base.FindProperty<UnityEngine.UI.Button>(transform, "Illustrations");
+		this.RegisterButtonClickEvent (this._illustrations);
+		
+		this._mushroomsDescriptionList = HS_Base.FindProperty<HS.UI.HS_UIListView>(transform, "MushroomsDescriptionList");
+		this._mushroomsDescriptionList.onInit += OnListViewInit;
+		this._mushroomsDescriptionList.onCellCreated += OnCellCreated;
+		this._mushroomsDescriptionList.onClick += OnListViewClick;
+		this._mushroomsDescriptionList.onSelected += OnListViewSelected;
+		this._mushroomsDescriptionList.onDeselected += OnListViewDeselected;
+		
+		this._mushroomsSpeciesList = HS_Base.FindProperty<HS.UI.HS_UIListView>(transform, "MushroomsSpeciesList");
+		this._mushroomsSpeciesList.onInit += OnListViewInit;
+		this._mushroomsSpeciesList.onCellCreated += OnCellCreated;
+		this._mushroomsSpeciesList.onClick += OnListViewClick;
+		this._mushroomsSpeciesList.onSelected += OnListViewSelected;
+		this._mushroomsSpeciesList.onDeselected += OnListViewDeselected;
 	}
 	
 	#region HumidityList
 	protected static class TVHumidityList
+	{
+		public class Cell
+		{
+		}
+		
+		static public Cell Get(HS_UIListViewCell cell)
+		{
+			Transform t = cell.transform;
+			Cell obj = new Cell();
+			return obj;
+		}
+	}
+	#endregion
+	
+	#region MushroomsDescriptionList
+	protected static class TVMushroomsDescriptionList
+	{
+		public class Cell
+		{
+		}
+		
+		static public Cell Get(HS_UIListViewCell cell)
+		{
+			Transform t = cell.transform;
+			Cell obj = new Cell();
+			return obj;
+		}
+	}
+	#endregion
+	
+	#region MushroomsSpeciesList
+	protected static class TVMushroomsSpeciesList
 	{
 		public class Cell
 		{
