@@ -8,8 +8,6 @@ using HS.Manager;
 
 public class BaseUIHomeView : HS_ViewBase
 {
-	protected UnityEngine.RectTransform _goldInfo;
-	protected UnityEngine.UI.Text _gold;
 	protected UnityEngine.RectTransform _diamondInfo;
 	protected UnityEngine.UI.Text _diamond;
 	protected UnityEngine.UI.Button _home;
@@ -20,6 +18,8 @@ public class BaseUIHomeView : HS_ViewBase
 	protected UnityEngine.UI.Button _illustrations;
 	protected HS.UI.HS_UIListView _mushroomsDescriptionList;
 	protected HS.UI.HS_UIListView _mushroomsSpeciesList;
+	protected UnityEngine.RectTransform _goldInfo;
+	protected UnityEngine.UI.Text _gold;
 	
 	internal override GameObject GetViewPrefab()
 	{
@@ -32,11 +32,6 @@ public class BaseUIHomeView : HS_ViewBase
 	
 		Transform transform = this.transform;
 		if (transform == HS_ViewManager.root.transform) return;
-		
-		this._goldInfo = HS_Base.FindProperty<UnityEngine.RectTransform>(transform, "GoldInfo");
-		
-		this._gold = HS_Base.FindProperty<UnityEngine.UI.Text>(transform, "GoldInfo/Gold");
-		this._gold.text = "New Text";
 		
 		this._diamondInfo = HS_Base.FindProperty<UnityEngine.RectTransform>(transform, "DiamondInfo");
 		
@@ -77,6 +72,11 @@ public class BaseUIHomeView : HS_ViewBase
 		this._mushroomsSpeciesList.onClick += OnListViewClick;
 		this._mushroomsSpeciesList.onSelected += OnListViewSelected;
 		this._mushroomsSpeciesList.onDeselected += OnListViewDeselected;
+		
+		this._goldInfo = HS_Base.FindProperty<UnityEngine.RectTransform>(transform, "GoldInfo");
+		
+		this._gold = HS_Base.FindProperty<UnityEngine.UI.Text>(transform, "GoldInfo/Gold");
+		this._gold.text = "New Text";
 	}
 	
 	#region HumidityList
