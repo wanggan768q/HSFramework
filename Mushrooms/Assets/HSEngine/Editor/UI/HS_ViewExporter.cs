@@ -234,6 +234,7 @@ namespace HS.Edit
             code.AppendLine("{");
             code.AppendLine("");
 
+            /*
             code.AppendLine(TAB1 + "protected override void OnCreated()");
             code.AppendLine(TAB1 + "{");
             code.AppendLine(TAB2 + "base.OnCreated ();");
@@ -243,6 +244,7 @@ namespace HS.Edit
             code.AppendLine(TAB1 + "{");
             code.AppendLine(TAB2 + "base.OnStarted ();");
             code.AppendLine(TAB1 + "}");
+            */
 
             code.AppendLine(TAB1 + "protected override void OnOpened()");
             code.AppendLine(TAB1 + "{");

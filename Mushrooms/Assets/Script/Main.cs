@@ -6,7 +6,7 @@ public class Main : MonoBehaviour {
 
     void Awake()
     {
-
+        D.EnableLog = true;
     }
 
 	void Start () {

@@ -8,14 +8,17 @@ using HS.Manager;
 
 public class UILogoView : BaseUILogoView
 {
-
 	protected override void OnCreated()
 	{
 		base.OnCreated ();
 	}
 	protected override void OnStarted()
 	{
-		base.OnStarted ();
+        scheduler.Timeout(() =>
+        {
+            HS_ViewManager.Open<UIHomeView>();
+            HS_ViewManager.Close<UILogoView>();
+        },5);
 	}
 	protected override void OnOpened()
 	{
