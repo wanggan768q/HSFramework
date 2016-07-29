@@ -6,7 +6,7 @@ using HS.Base;
 using HS.UI;
 using HS.Manager;
 
-public class UILoginView : BaseUILoginView , IForward
+public class UILoginView : BaseUILoginView
 {
 
 	protected override void OnOpened()
@@ -16,5 +16,14 @@ public class UILoginView : BaseUILoginView , IForward
 	protected override void OnClosed()
 	{
 		base.OnClosed ();
+	}
+	protected override void OnStarted ()
+	{
+		base.OnStarted ();
+		scheduler.Timeout(() =>
+			{
+				HS_ViewManager.Open<UIHomeView>();
+				HS_ViewManager.Close<UILoginView>();
+			},1);
 	}
 }

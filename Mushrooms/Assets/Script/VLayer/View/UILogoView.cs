@@ -16,7 +16,7 @@ public class UILogoView : BaseUILogoView
 	{
         scheduler.Timeout(() =>
         {
-            HS_ViewManager.Open<UIHomeView>();
+            HS_ViewManager.Open<UILoginView>();
             HS_ViewManager.Close<UILogoView>();
         },2);
 	}
