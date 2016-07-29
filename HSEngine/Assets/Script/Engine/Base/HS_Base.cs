@@ -68,6 +68,7 @@ namespace HS.Base
         /// <returns></returns>
         public static bool DeleteDir(string path)
         {
+            #if UNITY_WINDOWS
             try
             { // 清除空格 
                 //strPath = @strPath.Trim().ToString(); // 判断文件夹是否存在 
@@ -97,6 +98,10 @@ namespace HS.Base
                 D.LogError(Exp.ToString());
                 return false;
             }
+            #else
+            return true;
+            #endif
+            
         }
 
         /// <summary>
@@ -109,6 +114,7 @@ namespace HS.Base
             {
                 return;
             }
+            #if UNITY_WINDOWS
             foreach (string d in Directory.GetFileSystemEntries(dir))
             {
                 if (File.Exists(d))
@@ -128,6 +134,7 @@ namespace HS.Base
                     Directory.Delete(d);
                 }
             }
+            #endif
         }
 
         /// <summary>
@@ -137,6 +144,7 @@ namespace HS.Base
         /// <param name="destinationPath"></param>
         public static void SystemCopyDirectory(string sourcePath, string destinationPath,params string[] filterPrefix)
         {
+            /*
             try
             {
                 DirectoryInfo info = new DirectoryInfo(sourcePath);
@@ -172,6 +180,7 @@ namespace HS.Base
             {
             	
             }
+            */
             
         }
         
