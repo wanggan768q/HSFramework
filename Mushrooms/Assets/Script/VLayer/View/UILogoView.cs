@@ -18,7 +18,7 @@ public class UILogoView : BaseUILogoView
         {
             HS_ViewManager.Open<UIHomeView>();
             HS_ViewManager.Close<UILogoView>();
-        },5);
+        },2);
 	}
 	protected override void OnOpened()
 	{

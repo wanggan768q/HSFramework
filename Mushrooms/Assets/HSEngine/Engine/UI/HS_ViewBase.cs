@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System;
 using System.Collections;
 using HS.Base;
 using System.Collections.Generic;
@@ -31,6 +32,19 @@ namespace HS.UI
                 return mScheduler;
             }
         }
+
+		protected void Compare(GameObject g0,GameObject g1,Action action)
+		{
+			if (g0 == g1 && action != null) {
+				action ();
+			}
+		}
+		protected void Compare(GameObject g0,MonoBehaviour g1,Action action)
+		{
+			if (g1 != null && g0 == g1.gameObject && action != null) {
+				action ();
+			}
+		}
 
         /****************************************************\  
         | Unity MonoBehaviour Methods                        |
