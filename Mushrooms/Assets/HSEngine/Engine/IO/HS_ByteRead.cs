@@ -2,11 +2,52 @@
 using System.Collections;
 using System;
 using System.Collections.Generic;
+using System.Text;
+using System.IO;
 
 namespace HS.IO
 {
     public static class HS_ByteRead
     {
+        public static bool ReadCsvFile(string Filename, out string csvContent)
+        {
+            csvContent = "";
+            try
+            {
+                //Debug.Log(fullName);
+                StreamReader readerConfig = new StreamReader(Filename, Encoding.UTF8);
+                csvContent = readerConfig.ReadToEnd();
+                readerConfig.Close();
+            }
+            catch (Exception e)
+            {
+                e.GetType();
+                return false;
+            }
+            return true;
+        }
+
+        public static bool ReadBinFile(string Filename, out byte[] binContent)
+        {
+            binContent = null;
+            //        try
+            //        {
+            //            string fullName = "table/" + Filename;
+            //            FileInfo fileInfo = new FileInfo(fullName);
+            //            binContent = new byte[fileInfo.Length];
+            //            FileStream file = new FileStream(fullName, FileMode.Open);
+            //            file.Seek(0, SeekOrigin.Begin);
+            //            file.Read(binContent, 0, (int)fileInfo.Length);
+            //            file.Close();
+            //        }
+            //        catch( Exception e )
+            //        {
+            //            e.GetType();
+            //            return false;
+            //        }
+            return true;
+        }
+
         public static int ReadString(byte[] ioBuffer, int ioIndex, out string value)
         {
             int readPos = ioIndex;
@@ -26,6 +67,17 @@ namespace HS.IO
             readPos += len;
             return (readPos - ioIndex);
         }
+
+        public static int ReadBool(byte[] ioBuffer, int ioIndex, out bool value)
+        {
+            int readPos = ioIndex;
+            int len = 0;
+            readPos += ReadInt32Variant(ioBuffer, readPos, out len);
+            value = BitConverter.ToBoolean(ioBuffer, readPos);
+            readPos += len;
+            return (readPos - ioIndex);
+        }
+
         public static List<string> readCsvLine(string CsvContent, ref int offset)
         {
             List<string> splitList = new List<string>();

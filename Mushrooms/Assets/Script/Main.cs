@@ -10,9 +10,21 @@ public class Main : MonoBehaviour {
     }
 
 	void Start () {
-        HS_ViewManager.Open<UILogoView>();
+        //HS_ViewManager.Open<UILogoView>();
+        StartCoroutine(Load());
     }
 	
+
+    IEnumerator Load()
+    {
+        ConfigLoad.GetInstance().configLoadProgress += (float f) =>
+        {
+            D.Log(f);
+        };
+        yield return ConfigLoad.GetInstance().LoadConfig();
+        ConfigLoad.GetInstance().Destory();
+    }
+
 	void Update () {
 	
 	}
