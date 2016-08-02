@@ -21,7 +21,7 @@ namespace HS.Base
         public static string ConvertToTimePoint(int seconds)
         {
             System.DateTime t = _BasicDateTime.AddSeconds((double)seconds);
-            return t.ToString("hh:mm:ss");
+            return t.ToString("HH:mm:ss");
         }
 
         /// <summary>
