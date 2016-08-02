@@ -8,15 +8,32 @@ public class TimeManager :  HS_SingletonGameObject<TimeManager>
     /// <summary>
     /// 游戏开始时间戳
     /// </summary>
-    public int StartTime = 0;
-
-
-	void Start ()
+    public int StartTime
     {
-        StartCoroutine(Time());
-	}
+        get;
+        private set;
+    }
 
-    IEnumerator Time()
+    /// <summary>
+    /// 当前真实网络时间
+    /// </summary>
+    public int TotalTime
+    {
+        get
+        {
+            return StartTime + (int)UnityEngine.Time.realtimeSinceStartup;
+        }
+    }
+    
+    void Start ()
+    {
+        UpdateStartTime((int startTime)=> 
+        {
+            D.Log("最新时间戳: " + startTime + " => " + HS_Time.ConvertToTimePoint(startTime));
+        });
+    }
+
+    IEnumerator Time(System.Action<int> action)
     {
         WWW w = new WWW("http://www.baidu.com/");
         yield return w;
@@ -31,11 +48,20 @@ public class TimeManager :  HS_SingletonGameObject<TimeManager>
         if(DateTime.TryParse(date,out t))
         {
             StartTime = HS_Time.ConvertDateTimeInt(t);
+            if(action != null)
+            {
+                action(StartTime);
+            } 
         }
     }
-	
-	// Update is called once per frame
-	void Update ()
+
+    public void UpdateStartTime(System.Action<int> action)
+    {
+        StartCoroutine(Time(action));
+    }
+
+    
+    void Update ()
     {
         if(Input.GetKeyDown(KeyCode.Keypad0))
         {
