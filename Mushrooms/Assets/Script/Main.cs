@@ -7,10 +7,15 @@ public class Main : MonoBehaviour {
     void Awake()
     {
         D.EnableLog = true;
+
+        TimeManager.GetInstance();
+
+        GameArchive.GetInstance().Read();
     }
 
 	void Start () {
         //HS_ViewManager.Open<UILogoView>();
+        
         StartCoroutine(Load());
     }
 	

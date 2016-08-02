@@ -1,8 +1,10 @@
 ﻿using UnityEngine;
 using System.Collections;
 using MonsterLove.StateMachine;
+using HS.UI;
+using HS.Manager;
 
-public class MushroomsWitherStateBehaviour : MonoBehaviour
+public class MushroomsWitherStateBehaviour : HS_ComponentBase
 {
     public enum WitherState
     {
@@ -19,10 +21,32 @@ public class MushroomsWitherStateBehaviour : MonoBehaviour
     {
         this._Mushrooms = m;
         _MushroomsWitherState = StateMachine<WitherState>.Initialize(this, WitherState.NULL);
+
+        int stage = 1;
+        scheduler.Timeout(() =>
+        {
+            ChangeState(WitherState.Wither1);
+        }, m.SurplusTime / stage++);
+
+        scheduler.Timeout(() =>
+        {
+            ChangeState(WitherState.Wither2);
+        }, m.SurplusTime / stage++);
+
+        scheduler.Timeout(() =>
+        {
+            ChangeState(WitherState.Wither3);
+        }, m.SurplusTime / stage++);
+
     }
 
     public void ChangeState(WitherState state)
     {
+        if (HS_ViewManager.Get<UIHomeView>().CurrentHumidity > 0f)
+        {
+            D.Log("湿度为 0");
+            return;
+        }
         _MushroomsWitherState.ChangeState(state);
     }
 

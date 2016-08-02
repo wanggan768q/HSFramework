@@ -13,4 +13,10 @@ public class SpriteManager : HS_Singleton<SpriteManager>
     {
         Mushrooms m = _MushroomsPool.New();
     }
+
+    public void Create(MushroomsCfgElement e)
+    {
+        Mushrooms m =_MushroomsPool.New();
+        m.Init(e);
+    }
 }

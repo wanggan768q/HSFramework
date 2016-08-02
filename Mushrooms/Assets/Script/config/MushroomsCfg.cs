@@ -22,7 +22,7 @@ public class MushroomsCfgElement
 	/// <summary>
 	/// 成熟时间(单位秒)
 	/// </summary>
-	public float RipeTime;
+	public int RipeTime;
 
 	/// <summary>
 	/// 出售价格
@@ -145,7 +145,7 @@ public class MushroomsCfgTable
 			MushroomsCfgElement member = new MushroomsCfgElement();
 			readPos += HS_ByteRead.ReadInt32Variant(binContent, readPos, out member.Id );
 			readPos += HS_ByteRead.ReadString(binContent, readPos, out member.AnimationName );
-			readPos += HS_ByteRead.ReadFloat(binContent, readPos, out member.RipeTime );
+			readPos += HS_ByteRead.ReadInt32Variant(binContent, readPos, out member.RipeTime );
 			readPos += HS_ByteRead.ReadInt32Variant(binContent, readPos, out member.SalePrice );
 			readPos += HS_ByteRead.ReadBool(binContent, readPos, out member.isOk );
 
@@ -188,7 +188,7 @@ public class MushroomsCfgTable
 			MushroomsCfgElement member = new MushroomsCfgElement();
 			member.Id = Convert.ToInt32(vecLine[0]);
 			member.AnimationName = vecLine[1];
-			member.RipeTime = (float)Convert.ToDouble(vecLine[2]);
+			member.RipeTime = Convert.ToInt32(vecLine[2]);
 			member.SalePrice = Convert.ToInt32(vecLine[3]);
 			member.isOk= Convert.ToBoolean(vecLine[4]);
 
@@ -214,7 +214,7 @@ public class MushroomsCfgTable
 	        MushroomsCfgElement member = new MushroomsCfgElement();
 			member.Id = (int)jd["Id"];
 			member.AnimationName = (string)jd["AnimationName"];
-			member.RipeTime = (float)((double)jd["RipeTime"]);
+			member.RipeTime = (int)jd["RipeTime"];
 			member.SalePrice = (int)jd["SalePrice"];
 			member.isOk = (bool)jd["isOk"];
 

@@ -9,29 +9,12 @@ using HS.Manager;
 namespace HS.UI
 {
 
-    public abstract class HS_ViewBase : MonoBehaviour
+    public abstract class HS_ViewBase : HS_ComponentBase
     {
 
         public static Color COLOR_GREEN = new Color(0.49f, 0.89f, 0.36f, 1f);
         public static Color COLOR_RED = new Color(1f, 0.35f, 0.35f, 1f);
 
-        private HS_Scheduler.Proxy mScheduler;
-
-        /// <summary>
-        /// Scheduler manager.
-        /// Close the view will automatically clean up scheduling tasks
-        /// </summary>
-        public HS_Scheduler.Proxy scheduler
-        {
-            get
-            {
-                if (mScheduler == null)
-                {
-                    mScheduler = new HS_Scheduler.Proxy();
-                }
-                return mScheduler;
-            }
-        }
 
 		protected void Compare(GameObject g0,GameObject g1,Action action)
 		{

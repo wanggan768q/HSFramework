@@ -23,4 +23,3 @@ xcopy /s /y %Config_Root%\\config %Code%
 xcopy /s /y %Config_Root%\\Json %StreamingAssets%
 
 
-pause
