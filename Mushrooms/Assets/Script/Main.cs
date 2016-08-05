@@ -15,8 +15,8 @@ public class Main : MonoBehaviour {
 
 	void Start () {
         //HS_ViewManager.Open<UILogoView>();
-        
-        StartCoroutine(Load());
+        HS_ViewManager.Open<UITestView>();
+        //StartCoroutine(Load());
     }
 	
 

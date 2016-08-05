@@ -217,10 +217,27 @@ namespace HS.UI
         private void CreateCell()
         {
             //Ex.Logger.Log("CreateCell", mCreateWithUpdate, Scheduler.GetTimer());
-            Value value = this.mValues[this.mKeepIndex];
-            GameObject cell = HS_ViewManager.UIAddChild(mGridContent.gameObject, mCellPrefab);
+//             Value value = this.mValues[this.mKeepIndex];
+//             GameObject cell = HS_ViewManager.UIAddChild(mGridContent.gameObject, mCellPrefab);
+//             cell.name = "CellPrefab";
+//             mValues[mKeepIndex].cell = cell.GetComponent<HS_UIListViewCell>();
+//             if (this.onInit != null)
+//             {
+//                 this.onInit(this, value.cell, value.data);
+//             }
+            GameObject cell = null;
+            int index = mKeepIndex % mCellCount;// 0 % 6 = 0 | 7 % 6 = 1
+            Value value = this.mValues[index];
+            if (mCellCount > cellCount || value.cell == null)
+            {
+                cell = HS_ViewManager.UIAddChild(mGridContent.gameObject, mCellPrefab);
+            }
+            else
+            {
+                cell = value.cell.gameObject;
+            }
             cell.name = "CellPrefab";
-            mValues[mKeepIndex].cell = cell.GetComponent<HS_UIListViewCell>();
+            value.cell = cell.GetComponent<HS_UIListViewCell>();
             if (this.onInit != null)
             {
                 this.onInit(this, value.cell, value.data);
