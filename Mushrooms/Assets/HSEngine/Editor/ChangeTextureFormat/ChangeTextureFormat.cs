@@ -67,7 +67,7 @@ namespace HS.Tool.Edit
             }
             string log = path;
             TextureImporter ti = TextureImporter.GetAtPath(path) as TextureImporter;
-            ti.textureType = TextureImporterType.Advanced;
+            ti.textureType = TextureImporterType.Default;
             ti.alphaIsTransparency = true;
             ti.mipmapEnabled = false;
             ti.wrapMode = TextureWrapMode.Clamp;

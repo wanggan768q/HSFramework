@@ -120,7 +120,7 @@ namespace HS.Edit.Build
             {
                 PlayerSettings.SetScriptingDefineSymbolsForGroup(BuildTargetGroup.Android, "");
             }
-            PlayerSettings.bundleIdentifier = packerName;
+            PlayerSettings.applicationIdentifier = packerName;
             PlayerSettings.defaultInterfaceOrientation = UIOrientation.LandscapeLeft;
             string path = rootPath + "/Client/Android";
 
@@ -160,7 +160,7 @@ namespace HS.Edit.Build
             string packerName = channelConfig.packerName;
             string rootPath = S_RootPath;
 
-            PlayerSettings.bundleIdentifier = packerName;
+            PlayerSettings.applicationIdentifier = packerName;
             PlayerSettings.defaultInterfaceOrientation = UIOrientation.LandscapeLeft;
             string path = rootPath + "/Client/Windows";
 
