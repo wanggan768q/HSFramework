@@ -20,6 +20,10 @@ namespace HS.Edit
             HS_Directory.CreateDirectory(root + "/Assets/Script/VLayer/Base");
             HS_Directory.CreateDirectory(root + "/Assets/Script/VLayer/View");
 
+            //初始化LUA目录
+            HS_Directory.CreateDirectory(root + "/Assets/LuaFramework/Lua/VLayer/Base");
+            HS_Directory.CreateDirectory(root + "/Assets/LuaFramework/Lua/VLayer/View");
+
             //资源目录
             HS_Directory.CreateDirectory("Assets/SubAssets/Res/Prefabs/UI");
 

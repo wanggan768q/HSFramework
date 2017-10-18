@@ -36,6 +36,51 @@ namespace HS.Base
             return root.GetComponent<T>();
         }
 
+        public static Component FindProperty(Transform root, string path, string componentName)
+        {
+            string[] arr = path.Split('/');
+            for (int index = 0; index < arr.Length; index++)
+            {
+                bool find = false;
+                string key = arr[index];
+                foreach (Transform child in root)
+                {
+                    if (child.name == key)
+                    {
+                        root = child;
+                        find = true;
+                        break;
+                    }
+                }
+                if (!find)
+                    return null;
+            }
+            return root.GetComponent(componentName);
+        }
+
+        public static Component FindProperty(GameObject root, string path, string componentName)
+        {
+            string[] arr = path.Split('/');
+            for (int index = 0; index < arr.Length; index++)
+            {
+                bool find = false;
+                string key = arr[index];
+                foreach (Transform child in root.transform)
+                {
+                    if (child.name == key)
+                    {
+                        root = child.gameObject;
+                        find = true;
+                        break;
+                    }
+                }
+                if (!find)
+                    return null;
+            }
+
+            return root.GetComponent(componentName);
+        }
+
         /// <summary>
         /// 获取 StreamingAssets 资源路径
         /// </summary>

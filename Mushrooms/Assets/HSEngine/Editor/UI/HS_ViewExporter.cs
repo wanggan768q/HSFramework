@@ -19,7 +19,6 @@ namespace HS.Edit
         {
             Export("Assets/SubAssets/Res/Prefabs/UI", "Assets/Script/VLayer", "Assets/SubAssets/Res/Prefabs/UIListCell");
         }
-
         struct Property
         {
             public string name;
@@ -54,12 +53,16 @@ namespace HS.Edit
         static private Dictionary<string, Transform> mPathDict = new Dictionary<string, Transform>();
         static private List<Transform> mUIListViewList = new List<Transform>();
 
+        static private List<Transform> mListViewList = new List<Transform>();
+
         static private List<System.Type> mDefinedComponents = new List<System.Type>() {
             typeof(HS_ComponentBase), typeof(Button), typeof(Toggle), typeof(ToggleGroup), typeof(Slider), typeof(InputField), typeof(ScrollRect)
         };
 
         static private List<System.Type> mDefinedScripts = new List<System.Type>() {
-            typeof(Text), typeof(Image), typeof(RawImage), typeof(Animator), typeof(RectTransform),
+            typeof(Text), typeof(Image), typeof(RawImage), typeof(Animator),
+            typeof(RectTransform),typeof(HS_RepeatButton),typeof(UIButton),
+            typeof(HS_SwitchButton),typeof(HS_SwitchButtonGrop),
         };
 
         static public void Export(string prefabPath, string scriptPath, string cellPath, string baseClassName = "HS_ViewBase", Transform root = null)
@@ -79,7 +82,6 @@ namespace HS.Edit
                 Debug.LogError("Path alway start with \"Assets/\" .");
                 return;
             }
-            HS_Directory.CreateDirectory(prefabPath);
             for (int i = root.childCount - 1; i >= 0; --i)
             {
                 Transform child = root.GetChild(i);
@@ -92,9 +94,45 @@ namespace HS.Edit
                     mPropertyDict.Clear();
                     mPropertyNameDict.Clear();
                     mUIListViewList.Clear();
+                    mListViewList.Clear();
 
                     ParseCanvas(child, child, "");
+#if SupportChat
+                    #region ScrollView
+                    for (int j = 0; j < mListViewList.Count; j++)
+                    {
+                        ScrollView sv = mListViewList[j].GetComponent<ScrollView>();
+                        if (sv != null)
+                        {
+                            GameObject cellPrefab = sv.GetCellPrefab();
+                            if (cellPrefab == null)
+                            {
+                                string cellName = sv.GetCellPrefabName();
+                                string cellPrefabPath = GetCellPathName( cellName,cellPath );
+                                Debug.Log( "load path:" + cellPrefabPath );
+                                GameObject prefab = UnityEditor.AssetDatabase.LoadAssetAtPath( cellPrefabPath,typeof( GameObject ) ) as GameObject;
+                                cellPrefab = GameObject.Instantiate( prefab ) as GameObject;
+                                cellPrefab.transform.SetParent( sv.GetGridContent().transform );
+                                cellPrefab.transform.localScale = Vector3.one;
+                                cellPrefab.name = "CellPrefab";
+                            }
+                            if (cellPrefab == null)
+                            {
+                                Debug.LogError( "No cell prefab:" + mListViewList[j].name );
+                                break;
+                            }
+                            sv.SetCellPrefab( cellPrefab );
+                            ParseCanvas( cellPrefab.transform,cellPrefab.transform,"" );
+                        }
+                        else
+                        {
+                            mListViewList.RemoveAt( j-- );
+                        }
+                    }
+                    #endregion ScrollView
+#endif
 
+                    #region ListViewBase
                     for (int j = 0; j < mUIListViewList.Count; j++)
                     {
                         HS_ListViewBase listView = mUIListViewList[j].GetComponent<HS_ListViewBase>();
@@ -125,10 +163,14 @@ namespace HS.Edit
                             mUIListViewList.RemoveAt(j--);
                         }
                     }
+                    #endregion ListViewBase
 
-                    string newBaseClassName =  GenerateViewBaseClass(child, prefabPath, scriptPath + "/Base", cellPath, baseClassName);
+                    //string newBaseClassName = GenerateViewBaseClass(child, prefabPath, scriptPath + "/Base", cellPath, baseClassName);
 
+                    GenerateViewBaseLua(child, prefabPath);
+                    string newBaseClassName = GenerateViewBaseClass(child, prefabPath, scriptPath + "/Base", cellPath, baseClassName);
                     GenerateViewClass(scriptPath, viewName, newBaseClassName);
+                    
                 }
             }
 
@@ -154,6 +196,27 @@ namespace HS.Edit
                 Component com = null;
                 do
                 {
+#if SupportChat
+                    com = child.GetComponent<ChatText>();
+                    if (com != null)
+                    {
+                        found = true;
+                        parseChildren = false;
+                        AddProperty( panel,com,child.name,childPath );
+                        break;
+                    }
+
+                    com = child.GetComponent<ScrollView>();
+                    if (com != null)
+                    {
+                        found = true;
+                        parseChildren = false;
+                        AddProperty( panel,com,child.name,childPath );
+                        mListViewList.Add( child );
+                        break;
+                    }
+#endif
+
                     com = child.GetComponent<HS_ListViewBase>();
                     if (com != null)
                     {
@@ -165,6 +228,10 @@ namespace HS.Edit
                     }
 
                     bool isProperty = child.gameObject.CompareTag(VIEW_PROPERTY);
+                    if (isProperty == false)
+                    {
+                        break;
+                    }
                     com = child.GetComponent<Canvas>();
                     if (com != null)
                     {
@@ -210,9 +277,9 @@ namespace HS.Edit
             }
         }
 
-        static private void GenerateViewClass(string scriptPath,string childName,string baseClassName)
+        static private void GenerateViewClass(string scriptPath, string childName, string baseClassName)
         {
-            
+
             StringBuilder code = new StringBuilder();
             string className = "" + childName + "View";
             string fileName = scriptPath + "/View/" + className + ".cs";
@@ -255,7 +322,7 @@ namespace HS.Edit
             code.AppendLine(TAB1 + "{");
             code.AppendLine(TAB2 + "base.OnClosed ();");
             code.AppendLine(TAB1 + "}");
-            
+
 
             code.AppendLine("}");
 
@@ -275,7 +342,21 @@ namespace HS.Edit
             code.AppendLine("using HS.UI;");
             code.AppendLine("using HS.Manager;");
 
+
+
+            string viewPath = "";
+            int index = prefabPath.LastIndexOf("/Resources");
+            if (index > 0)
+            {
+                if (prefabPath[index + 10] == '/')
+                {
+                    viewPath = prefabPath.Substring(index + 11);
+                }
+            }
+
+            //string prefbleNameStr = viewPath + (string.IsNullOrEmpty(viewPath) ? "" : "/") + panel.name;
             code.AppendLine("");
+            //code.AppendLine("[UIPrefbleName( typeof( " + className + " ), \"" + prefbleNameStr + "\" )]");
             code.AppendLine("public class " + className + " : " + baseClassName);
             code.AppendLine("{");
 
@@ -292,18 +373,11 @@ namespace HS.Edit
                 }
             }
 
-            string viewPath = "";
-            int index = prefabPath.LastIndexOf("/Resources");
-            if (index > 0)
-            {
-                if (prefabPath[index + 10] == '/')
-                {
-                    viewPath = prefabPath.Substring(index + 11);
-                }
-            }
+
             code.Append(TAB1).AppendLine("");
             code.Append(TAB1).AppendLine("internal override GameObject GetViewPrefab()");
             code.Append(TAB1).AppendLine("{");
+            //code.Append(TAB2).AppendLine(string.Format("return ResourceManager.LoadAsset<GameObject>(\"{0}\");", prefbleNameStr));
             code.Append(TAB2).AppendLine(string.Format("return HS_ResourceManager.LoadAsset<GameObject>(\"{0}\");", viewPath + (string.IsNullOrEmpty(viewPath) ? "" : "/") + panel.name));
             code.Append(TAB1).AppendLine("}");
 
@@ -335,7 +409,7 @@ namespace HS.Edit
                         code.Append(TAB2).AppendLine(string.Format("{0} = HS_Base.FindProperty<{2}>(transform, \"{1}\");", propName, p.path, type));
                     }
 
-                    if (type == typeof(Button))
+                    if (type == typeof(Button) || type == typeof(UIButton))
                     {
                         code.Append(TAB2).AppendLine("this.RegisterButtonClickEvent (" + propName + ");");
                     }
@@ -361,7 +435,7 @@ namespace HS.Edit
                         if (localizationText != null && localizationText.languageKey != "")
                         {
                             //Localization.Format ();
-                            code.Append(TAB2).AppendLine("LocalizationText " + p.name + "LocalizationText = " + p.name + ".transform.GetComponent<LocalizationText> ();");
+                            code.Append(TAB2).AppendLine("HS_LocalizationText " + p.name + "LocalizationText = " + p.name + ".transform.GetComponent<HS_LocalizationText> ();");
                             code.Append(TAB2).AppendLine(propName + ".text = Localization.Format (" + p.name + "LocalizationText.languageKey);");
                         }
                         else
@@ -376,14 +450,406 @@ namespace HS.Edit
                         if (type == typeof(HS_UIListView))
                         {
                             code.Append(TAB2).AppendLine(propName + ".onClick += OnListViewClick;");
+                            code.Append(TAB2).AppendLine(propName + ".onValueChange += OnListViewValueChange;");
+                            code.Append(TAB2).AppendLine(propName + ".onClickEnd += OnListViewClickEnd;");
                             code.Append(TAB2).AppendLine(propName + ".onSelected += OnListViewSelected;");
                             code.Append(TAB2).AppendLine(propName + ".onDeselected += OnListViewDeselected;");
+                            code.Append(TAB2).AppendLine(propName + ".onLongPressEvent += OnListViewLongPress;");
+
                         }
                     }
+                    else if (type == typeof(HS_RepeatButton))
+                    {
+                        code.Append(TAB2).AppendLine(propName + ".OnClick += OnButtonClick;");
+                        code.Append(TAB2).AppendLine(propName + ".OnDown += OnButtenClickDown;");
+                        code.Append(TAB2).AppendLine(propName + ".OnUp += OnButtenClickUp;");
+                        code.Append(TAB2).AppendLine(propName + ".OnExit += OnButtenClickExit;");
+                        code.Append(TAB2).AppendLine(propName + ".OnLongpress += OnButtenClickLongDown;");
+                    }
+                    else if (type == typeof(HS_SwitchButton))
+                    {
+                        code.Append(TAB2).AppendLine(propName + ".OnClick += OnSwitchButtenClick;");
+                    }
+#if SupportChat
+                    else if (type == typeof( ListView ))
+                    {
+                    }
+#endif
+
                 }
             }
             code.Append(TAB1).AppendLine("}");
 
+            System.Action<Transform, string> generateCellClass = delegate (Transform cell, string name)
+            {
+                List<Property> props;
+                if (!mPropertyDict.TryGetValue(cell, out props))
+                {
+                    props = new List<Property>();
+                }
+                code.Append(TAB2).AppendLine("public class " + name);
+                code.Append(TAB2).AppendLine("{");
+                foreach (Property p in props)
+                {
+                    if (!p.isPrivate)
+                    {
+                        code.Append(TAB3).AppendLine(string.Format("public {0} {1};", p.type, p.name));
+                    }
+                }
+                code.Append(TAB2).AppendLine("}");
+                code.Append(TAB2).AppendLine("");
+            };
+            System.Action<Transform, string, string, string> generateCellProperty = delegate (Transform cell, string cellClassName, string insName, string space)
+            {
+                List<Property> props;
+                if (!mPropertyDict.TryGetValue(cell, out props))
+                {
+                    props = new List<Property>();
+                }
+                code.Append(space).AppendLine(cellClassName + " " + insName + " = new " + cellClassName + "();");
+                foreach (Property p in props)
+                {
+                    if (p.isPrivate)
+                    {
+                        code.Append(space).AppendLine(string.Format("{2} {0} = Utils.FindProperty<{2}>(t, \"{1}\");", p.name, p.path, p.type));
+                        if (p.type == typeof(Text))
+                        {
+                            code.Append(space).AppendLine(p.name + ".text = \"" + Regex.Replace(((Text)p.com).text, "(\\\"|\\\\)", "\\$0") + "\";");
+                        }
+                    }
+                    else
+                    {
+                        code.Append(space).AppendLine(string.Format("{0}.{1} = Utils.FindProperty<{3}>(t, \"{2}\");", insName, p.name, p.path, p.type));
+                    }
+                }
+            };
+
+            foreach (Transform t in mUIListViewList)
+            {
+                HS_ListViewBase listView = t.GetComponent<HS_ListViewBase>();
+                GameObject cellPrefab = listView.GetCellPrefab();
+                if (cellPrefab == null)
+                {
+                    Debug.LogError("No cell prefab:" + t.name);
+                    break;
+                }
+
+                string panelName = mObjectNames[t];
+                string panelClassName = "TV" + UpperFirstLetter(panelName);
+                string cellStructName = "Cell";
+                code.Append(TAB1).AppendLine("");
+                code.Append(TAB1).AppendLine("#region " + panelName);
+                code.Append(TAB1).AppendLine("public static class " + panelClassName);
+                code.Append(TAB1).AppendLine("{");
+
+                mObjectNameIds.Clear();
+
+                generateCellClass(cellPrefab.transform, "Cell");
+
+                code.Append(TAB2).AppendLine("static public " + cellStructName + " Get(UIListViewCell cell)");
+                code.Append(TAB2).AppendLine("{");
+                code.Append(TAB3).AppendLine("Transform t = cell.transform;");
+
+                generateCellProperty(cellPrefab.transform, "Cell", "obj", TAB3);
+
+                code.Append(TAB3).AppendLine("return obj;");
+                code.Append(TAB2).AppendLine("}");
+
+                code.Append(TAB1).AppendLine("}");
+                code.Append(TAB1).AppendLine("#endregion");
+            }
+
+            foreach (Transform t in mListViewList)
+            {
+#if SupportChat
+                ScrollView listView = t.GetComponent<ScrollView>();
+                GameObject cellPrefab = listView.GetCellPrefab();
+                if (cellPrefab == null)
+                {
+                    Debug.LogError( "No cell prefab:" + t.name );
+                    break;
+                }
+
+                string panelName = mObjectNames[t];
+                string panelClassName = "TV" + UpperFirstLetter( panelName );
+                string cellStructName = "Cell";
+                code.Append( TAB1 ).AppendLine( "" );
+                code.Append( TAB1 ).AppendLine( "#region " + panelName );
+                code.Append( TAB1 ).AppendLine( "public static class " + panelClassName );
+                code.Append( TAB1 ).AppendLine( "{" );
+
+                mObjectNameIds.Clear();
+
+                generateCellClass( cellPrefab.transform,"Cell" );
+
+                code.Append( TAB2 ).AppendLine( "static public " + cellStructName + " Get(ListViewCell cell)" );
+                code.Append( TAB2 ).AppendLine( "{" );
+                code.Append( TAB3 ).AppendLine( "Transform t = cell.transform;" );
+
+                generateCellProperty( cellPrefab.transform,"Cell","obj",TAB3 );
+
+                code.Append( TAB3 ).AppendLine( "return obj;" );
+                code.Append( TAB2 ).AppendLine( "}" );
+
+                code.Append( TAB1 ).AppendLine( "}" );
+                code.Append( TAB1 ).AppendLine( "#endregion" );
+#endif
+            }
+
+            code.AppendLine("}");
+
+            WriteString(scriptPath + "/" + className + ".cs", code.ToString());
+
+            foreach (Transform t in mUIListViewList)
+            {
+                HS_ListViewBase listView = t.GetComponent<HS_ListViewBase>();
+                if (listView != null)
+                {
+                    string cellName = GetCellPrefabName(panel, t);
+                    //Debug.Log("RecordCellPrefabName " + cellName);
+                    listView.RecordCellPrefabName(cellName);
+                    GameObject cell = listView.GetCellPrefab();
+                    if (cell != null)
+                    {
+                        string cellPrefabPath = GetCellPathName(cellName, cellPath);
+                        PrefabUtility.CreatePrefab(cellPrefabPath, cell, ReplacePrefabOptions.ReplaceNameBased);
+                    }
+
+                    GameObject gridContent = listView.GetGridContent();
+                    for (int i = gridContent.transform.childCount - 1; i >= 0; i--)
+                    {
+                        GameObject.DestroyImmediate(gridContent.transform.GetChild(i).gameObject);
+                    }
+                }
+            }
+
+            foreach (Transform t in mListViewList)
+            {
+#if SupportChat
+                ScrollView sv = t.GetComponent<ScrollView>();
+                if (sv != null)
+                {
+                    string cellName = GetCellPrefabName( panel,t );
+                    Debug.Log( "Record CellPrefabName " + cellName );
+                    sv.RecordCellPrefabName( cellName );
+                    GameObject cell = sv.GetCellPrefab();
+                    if (cell != null)
+                    {
+                        string cellPrefabPath = GetCellPathName( cellName,cellPath );
+                        PrefabUtility.CreatePrefab( cellPrefabPath,cell,ReplacePrefabOptions.ReplaceNameBased );
+                    }
+
+                    GameObject gridContent = sv.GetGridContent();
+                    for (int i = gridContent.transform.childCount - 1; i >= 0; i--)
+                    {
+                        GameObject.DestroyImmediate( gridContent.transform.GetChild( i ).gameObject );
+                    }
+                }
+#endif
+            }
+
+            MakeDirs(prefabPath);
+            PrefabUtility.CreatePrefab(prefabPath + "/" + panel.name + ".prefab", panel.gameObject, ReplacePrefabOptions.ConnectToPrefab);
+
+            GameObject.DestroyImmediate(panel.gameObject);
+
+            return className;
+        }
+
+        public static void WriteString(string filePath, string content)
+        {
+            MakeDirs(filePath);
+            File.WriteAllText(filePath, content, Encoding.UTF8);
+        }
+
+        public static void MakeDirs(string path)
+        {
+            string dir = Path.GetDirectoryName(path);
+            if (!Directory.Exists(dir))
+            {
+                Directory.CreateDirectory(dir);
+            }
+        }
+
+        static private void AddProperty(Transform panel, Component com, string name, string path, bool isPrivate = false)
+        {
+            name = GetUniqueName(panel, name, path);
+            List<Property> properties;
+            if (!mPropertyDict.TryGetValue(panel, out properties))
+            {
+                properties = new List<Property>();
+                mPropertyDict[panel] = properties;
+            }
+            properties.Add(new Property(name, path, com, isPrivate));
+        }
+
+        static private string GetUniqueName(Transform t, string name, string path)
+        {
+            int i = 0;
+            Dictionary<string, string> names;
+            if (!mPropertyNameDict.TryGetValue(t, out names))
+            {
+                names = new Dictionary<string, string>();
+                mPropertyNameDict[t] = names;
+            }
+            if (names.ContainsValue(path))
+            {
+                throw new UnityException("With path under the same object: " + path);
+            }
+            string old = name;
+            while (names.ContainsKey(name))
+            {
+                name = old + (++i);
+            }
+            names.Add(name, path);
+            return name;
+        }
+
+        static private string GetCellPathName(string cellName, string cellPath)
+        {
+            return cellPath + HS_Path.Separator + cellName + ".prefab";
+        }
+
+        static private string GetCellPrefabName(Transform panel, Transform listView)
+        {
+            return panel.name + "_" + UpperFirstLetter(mObjectNames[listView]) + "_Cell";
+        }
+
+        static private string UpperFirstLetter(string str)
+        {
+            str = str.Replace(" ", "");
+            return str.Substring(0, 1).ToUpper() + str.Substring(1);
+        }
+
+        static private string LowerFirstLetter(string str)
+        {
+            str = str.Replace(" ", "");
+            return str.Substring(0, 1).ToLower() + str.Substring(1);
+        }
+
+        static private void GenerateViewBaseLua(Transform panel,string prefabPath)
+        {
+            // generate script
+            //StringBuilder code = new StringBuilder();
+
+            StreamReader sr = new StreamReader(Application.dataPath + "/../Template/BaseView.lua");
+
+            string template = sr.ReadToEnd();
+            sr.Close();
+            sr.Dispose();
+
+            string className = UpperFirstLetter(panel.name);
+            ///baseClassName = "Base" + className;
+
+            StringBuilder memberField = new StringBuilder();
+
+            List<Property> properties;
+            mPropertyDict.TryGetValue(panel, out properties);
+
+            string viewPath = "";
+            int index = prefabPath.LastIndexOf("/Resources");
+            if (index > 0)
+            {
+                if (prefabPath[index + 10] == '/')
+                {
+                    viewPath = prefabPath.Substring(index + 11);
+                }
+            }
+
+            if (properties != null)
+            {
+                foreach (Property p in properties)
+                {
+                    System.Type type = p.type;
+                    string propName = "v." + p.name;
+                    memberField.Append(TAB1).AppendFormat("v.{0} = HSBase.FindProperty( v.transform,\"{1}\",\"{2}\")", p.name, p.path, p.type).AppendLine();
+
+                    if (type == typeof(Button))
+                    {
+                        memberField.Append(TAB1).AppendFormat("lb:RegisterButtonClickEvent({0})", propName).AppendLine();
+                    }
+                    else if (type == typeof(Slider))
+                    {
+                        memberField.Append(TAB1).AppendFormat("lb:RegisterSliderEvent({0})", propName).AppendLine();
+                    }
+                    else if (type == typeof(Toggle))
+                    {
+                        memberField.Append(TAB1).AppendFormat("lb:RegisterToggleEvent({0})", propName).AppendLine();
+                    }
+                    else if (type == typeof(Dropdown))
+                    {
+                        memberField.Append(TAB1).AppendFormat("lb:RegisterDropDownEvent({0})", propName).AppendLine();
+                    }
+                    else if (type == typeof(InputField))
+                    {
+                        memberField.Append(TAB1).AppendFormat("lb:RegisterInputFieldEvent({0})", propName).AppendLine();
+                    }
+                    else if (type == typeof(Text))
+                    {
+                        //                         HS_LocalizationText localizationText = p.com.transform.GetComponent<HS_LocalizationText>();
+                        //                         if (localizationText != null && localizationText.languageKey != "")
+                        //                         {
+                        //                             //Localization.Format ();
+                        //                             code.Append(TAB2).AppendLine("LocalizationText " + p.name + "LocalizationText = " + p.name + ".transform.GetComponent<LocalizationText> ();");
+                        //                             code.Append(TAB2).AppendLine(propName + ".text = Localization.Format (" + p.name + "LocalizationText.languageKey);");
+                        //                         }
+                        //                         else
+                        //                         {
+                        //                             code.Append(TAB2).AppendLine(propName + ".text = \"" + Regex.Replace(((Text)p.com).text, "(\\\"|\\\\)", "\\$0") + "\";");
+                        //                         }
+
+                        memberField.Append(TAB1).AppendFormat("{0}.text = \"{1}\"", propName, Regex.Replace(((Text)p.com).text, "(\\\"|\\\\)", "\\$0")).AppendLine();
+                    }
+                    else if (type == typeof(HS_UIListView))
+                    {
+                        //                         code.Append(TAB2).AppendLine(propName + ".onInit += OnListViewInit;");
+                        //                         code.Append(TAB2).AppendLine(propName + ".onCellCreated += OnCellCreated;");
+                        //                         if (type == typeof(HS_UIListView))
+                        //                         {
+                        //                             code.Append(TAB2).AppendLine(propName + ".onClick += OnListViewClick;");
+                        //                             code.Append(TAB2).AppendLine(propName + ".onSelected += OnListViewSelected;");
+                        //                             code.Append(TAB2).AppendLine(propName + ".onDeselected += OnListViewDeselected;");
+                        //                         }
+
+                        //memberField.Append(TAB1).AppendFormat("{0}.text = \"{1}\"", propName, Regex.Replace(((Text)p.com).text, "(\\\"|\\\\)", "\\$0"));
+                    }
+                    memberField.AppendLine();
+                }
+            }
+
+
+
+            template = template.Replace("&memberField&", memberField.ToString())
+                .Replace("&panelName&", panel.name);
+
+            //生成 Base View Lua
+            StreamWriter sw = new StreamWriter(LuaFramework.AppConst.FrameworkRoot + "/Lua/VLayer/Base/Base" + panel.name + ".lua");
+            sw.WriteLine(template);
+            sw.Flush();
+            sw.Close();
+            sw.Dispose();
+
+            if (File.Exists(LuaFramework.AppConst.FrameworkRoot + "/Lua/VLayer/View/" + panel.name + ".lua"))
+            {
+                return;
+            }
+
+            sr = new StreamReader(Application.dataPath + "/../Template/UIView.lua");
+            template = sr.ReadToEnd();
+            sr.Close();
+            sr.Dispose();
+
+            //生成 view Lua
+            template = template.Replace("&panelName&", panel.name);
+
+            sw = new StreamWriter(LuaFramework.AppConst.FrameworkRoot + "/Lua/VLayer/View/" + panel.name + ".lua");
+            sw.WriteLine(template);
+            sw.Flush();
+            sw.Close();
+            sw.Dispose();
+
+
+            /*
             System.Action<Transform, string> generateCellClass = delegate (Transform cell, string name)
             {
                 List<Property> props;
@@ -495,81 +961,7 @@ namespace HS.Edit
             PrefabUtility.CreatePrefab(prefabPath + "/" + panel.name + ".prefab", panel.gameObject, ReplacePrefabOptions.ConnectToPrefab);
 
             GameObject.DestroyImmediate(panel.gameObject);
-
-            return className;
-        }
-
-        public static void WriteString(string filePath, string content)
-        {
-            MakeDirs(filePath);
-            File.WriteAllText(filePath, content, Encoding.UTF8);
-        }
-
-        public static void MakeDirs(string path)
-        {
-            string dir = Path.GetDirectoryName(path);
-            if (!Directory.Exists(dir))
-            {
-                Directory.CreateDirectory(dir);
-            }
-        }
-
-        static private void AddProperty(Transform panel, Component com, string name, string path, bool isPrivate = false)
-        {
-            name = GetUniqueName(panel, name, path);
-            List<Property> properties;
-            if (!mPropertyDict.TryGetValue(panel, out properties))
-            {
-                properties = new List<Property>();
-                mPropertyDict[panel] = properties;
-            }
-            properties.Add(new Property(name, path, com, isPrivate));
-        }
-
-        static private string GetUniqueName(Transform t, string name, string path)
-        {
-            int i = 0;
-            Dictionary<string, string> names;
-            if (!mPropertyNameDict.TryGetValue(t, out names))
-            {
-                names = new Dictionary<string, string>();
-                mPropertyNameDict[t] = names;
-            }
-            if (names.ContainsValue(path))
-            {
-                throw new UnityException("With path under the same object: " + path);
-            }
-            string old = name;
-            while (names.ContainsKey(name))
-            {
-                name = old + (++i);
-            }
-            names.Add(name, path);
-            return name;
-        }
-
-        static private string GetCellPathName(string cellName, string cellPath)
-        {
-            return cellPath + HS_Path.Separator + cellName + ".prefab";
-        }
-
-        static private string GetCellPrefabName(Transform panel, Transform listView)
-        {
-            return panel.name + "_" + UpperFirstLetter(mObjectNames[listView]) + "_Cell";
-        }
-
-        static private string UpperFirstLetter(string str)
-        {
-            str = str.Replace(" ", "");
-            return str.Substring(0, 1).ToUpper() + str.Substring(1);
-        }
-
-        static private string LowerFirstLetter(string str)
-        {
-            str = str.Replace(" ", "");
-            return str.Substring(0, 1).ToLower() + str.Substring(1);
+            */
         }
     }
 }
-
-

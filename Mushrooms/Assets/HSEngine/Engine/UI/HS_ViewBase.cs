@@ -77,7 +77,12 @@ namespace HS.UI
         /*********************************************************\
         | UI Event Handlers                                       |
         \*********************************************************/
-        virtual protected void OnButtonClick(GameObject go)
+//         virtual protected void OnButtonClick(GameObject go)
+//         {
+// 
+//         }
+
+        virtual protected void OnButtonClick(GameObject go,Button button)
         {
 
         }
@@ -118,26 +123,30 @@ namespace HS.UI
             return null;
         }
 
+        virtual internal string GetViewPrefabName()
+        {
+            return null;
+        }
+
         /*******************************************************************\
         | Internal Methods (Don't call these methods)                       |
         \*******************************************************************/
-
-        protected void RegisterButtonClickEvent(Button btn)
+        virtual public void RegisterButtonClickEvent(Button btn)
         {
             btn.onClick.AddListener(delegate {
                 HS_SoundManager.GetInstance().PlaySound("MenuSelect");
-                OnButtonClick(btn.gameObject);
+                OnButtonClick(btn.gameObject,btn);
             });
         }
 
-        protected void RegisterSliderEvent(Slider slider)
+        virtual public void RegisterSliderEvent(Slider slider)
         {
             slider.onValueChanged.AddListener(delegate (float value) {
                 this.OnValueChange(slider.gameObject, value, 0, false, "");
             });
         }
 
-        protected void RegisterToggleEvent(Toggle toggle)
+        virtual public void RegisterToggleEvent(Toggle toggle)
         {
             toggle.onValueChanged.AddListener(delegate (bool value) {
                 this.OnValueChange(toggle.gameObject, 0, 0, value, "");
@@ -145,7 +154,7 @@ namespace HS.UI
 
         }
 
-        protected void RegisterDropDownEvent(Dropdown dropdown)
+        virtual public void RegisterDropDownEvent(Dropdown dropdown)
         {
             dropdown.onValueChanged.AddListener(delegate (int value) {
                 this.OnValueChange(dropdown.gameObject, 0, value, false, "");
@@ -153,7 +162,7 @@ namespace HS.UI
 
         }
 
-        protected void RegisterInputFieldEvent(InputField inputField)
+        virtual public void RegisterInputFieldEvent(InputField inputField)
         {
             inputField.onValueChanged.AddListener(delegate (string value) {
                 this.OnValueChange(inputField.gameObject, 0, 0, false, value);
